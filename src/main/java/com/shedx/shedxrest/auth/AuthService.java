@@ -51,6 +51,11 @@ public class AuthService {
         user.setEmail(request.email());
         user.setPassword(encoder.encode(request.password()));
         user.setCompanyId(company.getId());
+        if(!repo.existsByCompanyId(company.getId())){
+            user.setRole("ROLE_ADMIN");
+        }else{
+            user.setRole("ROLE_USER");
+        }
         repo.save(user);
     }
 

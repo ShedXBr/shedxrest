@@ -30,12 +30,13 @@ public class CatalogController {
         
     }
     @GetMapping
-    public List<Catalog> list() {
-        Long companyId = TenantContext.getCompanyId();
-        return repo.findByCompanyId(companyId);
+    public List<Catalog> list(@RequestHeader String CompanyKey) {
+        CompanyEntity company = Crepo.findByPublicKey(CompanyKey)
+        .orElseThrow(()-> new BadCredentialsException("Invalid Company"));
+        return repo.findByCompanyId(company.getId());
     }
     @PostMapping("/register")
-    public ResponseEntity<String> create(@RequestBody Catalog catalog, @RequestHeader("CompanyKey") String companyKey){
+    public ResponseEntity<String> create(@RequestBody Catalog catalog){
         CompanyEntity company = Crepo.findById(TenantContext.getCompanyId())
         .orElseThrow(()->new BadCredentialsException("Invalid Company"));
         Catalog catalogEn = new Catalog();
