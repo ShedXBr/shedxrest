@@ -61,8 +61,30 @@ public class CatalogController {
         }else{
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Authorized");
         }
-        
-        
+    }
+    @PostMapping("/edit")
+    public ResponseEntity<String> editProduct(@RequestBody Catalog catalog, Authentication auth){
+        CompanyEntity company = Crepo.findById(TenantContext.getCompanyId())
+        .orElseThrow(()->new BadCredentialsException("Invalid Company"));
+        UserEntity user;
+        try {
+            user = Urepo.findById(Long.valueOf(auth.getName()))
+            .orElseThrow(()-> new BadCredentialsException("Invalid Auth"));
+        } catch (NumberFormatException e) {
+            throw new BadCredentialsException(e.getMessage());
+        }
+        if(user.getRole().equalsIgnoreCase("ROLE_ADMIN")){
+            Catalog catalogC = repo.findByNameAndCompanyId(catalog.getName(), company.getId())
+                .orElseThrow(()->new BadCredentialsException("This Product does not Exist"));
+            catalogC.setName(catalog.getName());
+            catalogC.setPrice(catalog.getPrice());
+            catalogC.setDescProduct(catalog.getDescProduct());
+            catalogC.setCompanyId(company.getId());
+            repo.save(catalogC);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Product Edited");
+            }else{
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Authorized");
+            }
     }
     
 }//Rest to create and list catalogs
